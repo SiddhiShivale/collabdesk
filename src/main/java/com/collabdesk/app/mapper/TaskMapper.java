@@ -1,0 +1,28 @@
+package com.collabdesk.app.mapper;
+
+import com.collabdesk.app.task.dto.TaskCreateDto;
+import com.collabdesk.app.task.dto.TaskResponseDto;
+import com.collabdesk.app.task.dto.TaskUpdateDto;
+import com.collabdesk.app.task.entity.Task;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
+@Mapper(componentModel = "spring", uses = UserMapper.class,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+public interface TaskMapper {
+
+    @Mapping(target = "assignee.id", source = "assigneeId")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "creator", ignore = true)
+    Task toTask(TaskCreateDto taskCreateDto);
+
+    TaskResponseDto toTaskResponseDto(Task task);
+
+    @Mapping(target = "assignee.id", source = "assigneeId")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "creator", ignore = true)
+    void updateTaskFromDto(TaskUpdateDto taskUpdateDto, @MappingTarget Task task);
+}
