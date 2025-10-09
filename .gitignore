@@ -65,6 +65,7 @@ Thumbs.db
 # Ignore all profile-specific application properties/yml files
 application-*.properties
 application-*.yml
+/src/main/resources/application.properties
 # But DO commit the default dev and test profiles
 !application-dev.properties
 !application-dev.yml
