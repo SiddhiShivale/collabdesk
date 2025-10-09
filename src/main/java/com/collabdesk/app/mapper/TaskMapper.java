@@ -9,20 +9,23 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", uses = UserMapper.class,
+@Mapper(componentModel = "spring", uses = {UserMapper.class, TeamMapper.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TaskMapper {
 
-    @Mapping(target = "assignee.id", source = "assigneeId")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "creator", ignore = true)
+    @Mapping(target = "team", ignore = true) 
+    @Mapping(target = "assignees", ignore = true) 
     Task toTask(TaskCreateDto taskCreateDto);
 
     TaskResponseDto toTaskResponseDto(Task task);
 
-    @Mapping(target = "assignee.id", source = "assigneeId")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "creator", ignore = true)
+    @Mapping(target = "team", ignore = true) 
+    @Mapping(target = "assignees", ignore = true) 
     void updateTaskFromDto(TaskUpdateDto taskUpdateDto, @MappingTarget Task task);
+    
 }

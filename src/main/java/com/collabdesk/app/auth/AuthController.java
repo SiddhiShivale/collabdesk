@@ -1,17 +1,7 @@
 package com.collabdesk.app.auth;
 
-import com.collabdesk.app.auth.dto.AuthRequest;
-import com.collabdesk.app.auth.dto.AuthResponse;
-import com.collabdesk.app.auth.dto.RefreshTokenResponse;
-import com.collabdesk.app.auth.dto.RegisterRequest;
-import com.collabdesk.app.auth.entity.RefreshToken;
-import com.collabdesk.app.mapper.UserMapper;
-import com.collabdesk.app.user.UserRepository;
-import com.collabdesk.app.user.entity.User;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +9,29 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
+import com.collabdesk.app.auth.dto.AuthRequest;
+import com.collabdesk.app.auth.dto.AuthResponse;
+import com.collabdesk.app.auth.dto.ForgotPasswordRequestDto;
+import com.collabdesk.app.auth.dto.RefreshTokenResponse;
+import com.collabdesk.app.auth.dto.RegisterRequest;
+import com.collabdesk.app.auth.dto.ResetPasswordRequestDto;
+import com.collabdesk.app.auth.entity.RefreshToken;
+import com.collabdesk.app.mapper.UserMapper;
+import com.collabdesk.app.user.UserRepository;
+import com.collabdesk.app.user.entity.User;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,9 +51,9 @@ public class AuthController {
 
     @Autowired
     private UserMapper userMapper;
-
+    
     @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private UserDetailsService userDetailsService;
 
     @Value("${application.security.jwt.refresh-token-expiration-ms}")
     private long refreshTokenExpirationMs;
@@ -56,12 +65,13 @@ public class AuthController {
         );
 
         if (authentication.isAuthenticated()) {
+   
+            UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
+            String accessToken = jwtService.generateToken(userDetails); // Pass the full object
+
             User user = userRepository.findByEmail(authRequest.getEmail()).orElseThrow();
-            String accessToken = jwtService.generateToken(org.springframework.security.core.userdetails.User.withUsername(user.getEmail()).password("").authorities("ROLE_" + user.getRole().name()).build());
             RefreshToken refreshToken = jwtService.createRefreshToken(user.getEmail());
-
             addRefreshTokenToCookie(response, refreshToken.getToken());
-
             return ResponseEntity.ok(new AuthResponse(accessToken, userMapper.toUserDto(user)));
         } else {
             throw new UsernameNotFoundException("Invalid user request!");
@@ -84,7 +94,7 @@ public class AuthController {
 
         RefreshToken verifiedToken = jwtService.verifyRefreshToken(refreshToken);
         User user = verifiedToken.getUser();
-        String newAccessToken = jwtService.generateToken(org.springframework.security.core.userdetails.User.withUsername(user.getEmail()).password("").authorities("ROLE_" + user.getRole().name()).build());
+        String newAccessToken = jwtService.generateToken(org.springframework.security.core.userdetails.User.withUsername(user.getEmail()).password("").authorities(user.getRole().name()).build());
 
         return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken));
     }
@@ -93,9 +103,9 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken != null) {
-            refreshTokenRepository.findByToken(refreshToken).ifPresent(token -> refreshTokenRepository.delete(token));
+            authService.logout(refreshToken);
         }
-        
+
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
@@ -106,14 +116,14 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword() {
-        // Placeholder for OTP generation and email sending logic
+    public ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequestDto requestDto) {
+        authService.forgotPassword(requestDto.getEmail());
         return ResponseEntity.ok("Password reset instructions sent to your email.");
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword() {
-        // Placeholder for OTP validation and password update logic
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequestDto requestDto) {
+        authService.resetPassword(requestDto.getEmail(), requestDto.getOtp(), requestDto.getNewPassword());
         return ResponseEntity.ok("Password has been reset successfully.");
     }
 

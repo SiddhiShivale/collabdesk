@@ -5,6 +5,8 @@ import com.collabdesk.app.task.dto.TaskCreateDto;
 import com.collabdesk.app.task.dto.TaskResponseDto;
 import com.collabdesk.app.task.dto.TaskUpdateDto;
 import com.collabdesk.app.task.entity.Task;
+import com.collabdesk.app.team.TeamRepository;
+import com.collabdesk.app.team.entity.Team;
 import com.collabdesk.app.user.UserRepository;
 import com.collabdesk.app.user.entity.User;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,23 +26,29 @@ public class TaskService {
 
     @Autowired
     private TaskRepository taskRepository;
-
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private TeamRepository teamRepository;
     @Autowired
     private TaskMapper taskMapper;
 
     @Transactional
     public TaskResponseDto createTask(TaskCreateDto createDto) {
         User creator = getCurrentUser();
-        User assignee = userRepository.findById(createDto.getAssigneeId())
-                .orElseThrow(() -> new EntityNotFoundException("Assignee not found with ID: " + createDto.getAssigneeId()));
+        Team team = teamRepository.findById(createDto.getTeamId())
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + createDto.getTeamId()));
+
+        List<User> assignees = userRepository.findAllById(createDto.getAssigneeIds());
+        if (assignees.size() != createDto.getAssigneeIds().size()) {
+            throw new EntityNotFoundException("One or more assignees not found.");
+        }
 
         Task task = taskMapper.toTask(createDto);
         task.setCreator(creator);
-        task.setAssignee(assignee);
-        task.setStatus(TaskStatus.TO_DO);
+        task.setTeam(team);
+        task.setAssignees(assignees);
+        task.setStatus(TaskStatus.TO_DO); // Initial status
 
         Task savedTask = taskRepository.save(task);
         return taskMapper.toTaskResponseDto(savedTask);
@@ -53,13 +61,6 @@ public class TaskService {
         return taskMapper.toTaskResponseDto(task);
     }
 
-    @Transactional(readOnly = true)
-    public List<TaskResponseDto> getAllTasks() {
-        return taskRepository.findAll().stream()
-                .map(taskMapper::toTaskResponseDto)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public TaskResponseDto updateTask(Long taskId, TaskUpdateDto updateDto) {
         Task existingTask = taskRepository.findById(taskId)
@@ -67,13 +68,27 @@ public class TaskService {
 
         taskMapper.updateTaskFromDto(updateDto, existingTask);
 
-        if (updateDto.getAssigneeId() != null) {
-            User newAssignee = userRepository.findById(updateDto.getAssigneeId())
-                    .orElseThrow(() -> new EntityNotFoundException("Assignee not found with ID: " + updateDto.getAssigneeId()));
-            existingTask.setAssignee(newAssignee);
+        if (updateDto.getTeamId() != null) {
+            Team newTeam = teamRepository.findById(updateDto.getTeamId())
+                    .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + updateDto.getTeamId()));
+            existingTask.setTeam(newTeam);
+        }
+
+        if (updateDto.getAssigneeIds() != null && !updateDto.getAssigneeIds().isEmpty()) {
+            List<User> newAssignees = userRepository.findAllById(updateDto.getAssigneeIds());
+            existingTask.setAssignees(newAssignees);
         }
 
         Task updatedTask = taskRepository.save(existingTask);
+        return taskMapper.toTaskResponseDto(updatedTask);
+    }
+
+    @Transactional
+    public TaskResponseDto updateTaskStatus(Long taskId, TaskStatus status) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+        task.setStatus(status);
+        Task updatedTask = taskRepository.save(task);
         return taskMapper.toTaskResponseDto(updatedTask);
     }
 
@@ -85,13 +100,16 @@ public class TaskService {
         taskRepository.deleteById(taskId);
     }
 
-    /**
-     * Smart Prioritization Engine:
-     * Sorts tasks based on a priority score.
-     * Priority is determined by:
-     * 1. Due date (closer dates are higher priority).
-     * 2. Status (TO_DO and IN_PROGRESS are higher than DONE or BLOCKED).
-     */
+    @Transactional(readOnly = true)
+    public List<TaskResponseDto> getTasksByTeamId(Long teamId) {
+        if (!teamRepository.existsById(teamId)) {
+            throw new EntityNotFoundException("Team not found with ID: " + teamId);
+        }
+        return taskRepository.findByTeamId(teamId).stream()
+                .map(taskMapper::toTaskResponseDto)
+                .collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<TaskResponseDto> getTasksWithSmartPrioritization() {
         List<Task> tasks = taskRepository.findAll();
@@ -107,7 +125,7 @@ public class TaskService {
     private int calculatePriorityScore(Task task) {
         int score = 0;
 
-        // Higher score for more urgent statuses
+        // Priority based on status
         switch (task.getStatus()) {
             case IN_PROGRESS:
                 score += 1000;
@@ -116,19 +134,19 @@ public class TaskService {
                 score += 500;
                 break;
             case BLOCKED:
-                score -= 500;
+                score -= 500; 
                 break;
             case DONE:
-                return Integer.MIN_VALUE; // Already done, lowest priority
+                return Integer.MIN_VALUE; 
         }
 
-        // Higher score for tasks with closer due dates
+        // Priority based on due date
         if (task.getDueDate() != null) {
             long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), task.getDueDate());
             if (daysUntilDue < 0) {
-                score += 2000; // Overdue tasks are highest priority
+                score += 2000; // Overdue tasks are critical
             } else if (daysUntilDue <= 3) {
-                score += 500; // Due within 3 days
+                score += 500; // Due soon
             } else if (daysUntilDue <= 7) {
                 score += 200; // Due within a week
             }

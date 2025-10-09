@@ -1,12 +1,21 @@
 package com.collabdesk.app.user.entity;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+
 import com.collabdesk.app.user.Role;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Objects;
 
 @Entity
 @Data
@@ -31,6 +40,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    
+    private String otp;
+    private LocalDateTime otpExpiryTime;
 
     @Override
     public boolean equals(Object o) {

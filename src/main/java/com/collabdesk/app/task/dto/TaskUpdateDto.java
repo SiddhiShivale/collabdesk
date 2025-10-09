@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,9 +17,9 @@ public class TaskUpdateDto {
     private String title;
     private String description;
     private TaskStatus status;
-    private Long assigneeId;
+    private Long teamId;
+    private List<Long> assigneeIds;
 
     @FutureOrPresent(message = "Due date must be in the present or future")
     private LocalDate dueDate;
-
 }

@@ -23,9 +23,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toUserDto)
-                .collect(Collectors.toList());
+    	  return userRepository.findByRoleNot(Role.ADMIN).stream()
+                  .map(userMapper::toUserDto)
+                  .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

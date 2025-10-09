@@ -1,5 +1,7 @@
 package com.collabdesk.app.user.dto;
 
+import com.collabdesk.app.user.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -11,5 +13,6 @@ public class UserDto {
     private Long id;
     private String name;
     private String email;
+    private Role role;
 
 }
