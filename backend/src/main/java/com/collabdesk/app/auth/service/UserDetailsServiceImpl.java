@@ -1,7 +1,8 @@
-package com.collabdesk.app.auth;
+package com.collabdesk.app.auth.service;
 
-import com.collabdesk.app.user.UserRepository;
-import com.collabdesk.app.user.entity.User;
+import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,9 +1,10 @@
-package com.collabdesk.app.auth;
+package com.collabdesk.app.auth.service;
 
 import com.collabdesk.app.auth.dto.RegisterRequest;
+import com.collabdesk.app.auth.repository.RefreshTokenRepository;
 import com.collabdesk.app.user.Role;
-import com.collabdesk.app.user.UserRepository;
-import com.collabdesk.app.user.entity.User;
+import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.repository.UserRepository;
 import com.collabdesk.app.util.EmailService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.collabdesk.app.auth;
+package com.collabdesk.app.auth.service;
 
 import java.security.Key;
 import java.time.Instant;
@@ -16,8 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.collabdesk.app.auth.entity.RefreshToken;
-import com.collabdesk.app.user.UserRepository;
+import com.collabdesk.app.auth.RefreshToken;
+import com.collabdesk.app.auth.repository.RefreshTokenRepository;
+import com.collabdesk.app.user.repository.UserRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

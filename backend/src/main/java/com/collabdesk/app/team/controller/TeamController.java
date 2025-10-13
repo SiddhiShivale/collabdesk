@@ -1,8 +1,9 @@
-package com.collabdesk.app.team;
+package com.collabdesk.app.team.controller;
 
 import com.collabdesk.app.team.dto.AddMemberRequestDto;
 import com.collabdesk.app.team.dto.TeamCreateDto;
 import com.collabdesk.app.team.dto.TeamDto;
+import com.collabdesk.app.team.service.TeamService;
 import com.collabdesk.app.user.dto.UserDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -32,6 +34,23 @@ public class TeamController {
     public ResponseEntity<List<TeamDto>> getAllTeams() {
         List<TeamDto> teams = teamService.getAllTeams();
         return ResponseEntity.ok(teams);
+    }
+    
+    @DeleteMapping("/{teamId}")
+    @PreAuthorize("hasRole('ADMIN')") // Admin is the only one who can delete a whole team
+    public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
+        teamService.deleteTeam(teamId); // You need to implement this service method
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/{teamId}")
+    @PreAuthorize("hasRole('ADMIN') or @teamSecurityService.isTeamLead(#teamId, principal.username)")
+    public ResponseEntity<TeamDto> updateTeam(
+            @PathVariable Long teamId, 
+            @RequestBody @Valid TeamCreateDto updateDto) { // Assuming TeamCreateDto or similar for update
+        
+        TeamDto updatedTeam = teamService.updateTeam(teamId, updateDto); // You need to implement this service method
+        return ResponseEntity.ok(updatedTeam);
     }
 
     @GetMapping("/{teamId}")
@@ -61,4 +80,14 @@ public class TeamController {
         TeamDto updatedTeam = teamService.removeMemberFromTeam(teamId, userId);
         return ResponseEntity.ok(updatedTeam);
     }
+    
+    @GetMapping("/my-team")
+    @PreAuthorize("hasRole('TEAM_LEAD')")
+    public ResponseEntity<TeamDto> getMyTeam(Principal principal) {
+        // principal.getName() will give you the username of the currently logged-in user
+        TeamDto team = teamService.getTeamByLeadUsername(principal.getName());
+        return ResponseEntity.ok(team);
+    }
+    
+    
 }

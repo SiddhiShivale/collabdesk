@@ -1,21 +1,24 @@
-package com.collabdesk.app.team;
-
-import com.collabdesk.app.mapper.TeamMapper;
-import com.collabdesk.app.mapper.UserMapper;
-import com.collabdesk.app.team.dto.TeamCreateDto;
-import com.collabdesk.app.team.dto.TeamDto;
-import com.collabdesk.app.team.entity.Team;
-import com.collabdesk.app.user.UserRepository;
-import com.collabdesk.app.user.dto.UserDto;
-import com.collabdesk.app.user.entity.User;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+package com.collabdesk.app.team.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.collabdesk.app.mapper.TeamMapper;
+import com.collabdesk.app.mapper.UserMapper;
+import com.collabdesk.app.team.Team;
+import com.collabdesk.app.team.dto.TeamCreateDto;
+import com.collabdesk.app.team.dto.TeamDto;
+import com.collabdesk.app.team.repository.TeamRepository;
+import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.dto.UserDto;
+import com.collabdesk.app.user.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class TeamService {
@@ -101,5 +104,48 @@ public class TeamService {
         return teamRepository.findAll().stream()
                 .map(teamMapper::toTeamDto)
                 .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public TeamDto getTeamByLeadUsername(String username) {
+    	Team team = teamRepository.findByLead_Email(username) // Use the new method name here
+                .orElseThrow(() -> new EntityNotFoundException("No team found for lead with username: " + username));
+                
+        return teamMapper.toTeamDto(team);
+    }
+    
+    @Transactional
+    public void deleteTeam(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + teamId));
+        
+        team.getMembers().clear();
+        team.setLead(null);
+        teamRepository.save(team);
+        
+        teamRepository.delete(team);
+    }
+    
+    @Transactional
+    public TeamDto updateTeam(Long teamId, TeamCreateDto updateDto) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + teamId));
+
+        if (updateDto.getName() != null) {
+            team.setName(updateDto.getName());
+        }
+
+        if (updateDto.getTeamLeadId() != null && !updateDto.getTeamLeadId().equals(team.getLead().getId())) {
+            User newLead = userRepository.findById(updateDto.getTeamLeadId())
+                    .orElseThrow(() ->  new EntityNotFoundException("Team lead not found with ID: " + updateDto.getTeamLeadId()));
+            team.setLead(newLead);
+            
+            if (!team.getMembers().contains(newLead)) {
+                 team.getMembers().add(newLead);
+            }
+        }
+        
+        Team updatedTeam = teamRepository.save(team);
+        return teamMapper.toTeamDto(updatedTeam);
     }
 }

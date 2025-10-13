@@ -1,6 +1,8 @@
-package com.collabdesk.app.team;
+package com.collabdesk.app.team.service;
 
-import com.collabdesk.app.team.entity.Team;
+import com.collabdesk.app.team.Team;
+import com.collabdesk.app.team.repository.TeamRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

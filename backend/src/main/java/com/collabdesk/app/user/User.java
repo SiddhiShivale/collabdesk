@@ -1,9 +1,7 @@
-package com.collabdesk.app.user.entity;
+package com.collabdesk.app.user;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-
-import com.collabdesk.app.user.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

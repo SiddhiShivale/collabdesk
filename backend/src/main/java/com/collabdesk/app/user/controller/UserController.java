@@ -1,7 +1,9 @@
-package com.collabdesk.app.user;
+package com.collabdesk.app.user.controller;
 
 import com.collabdesk.app.user.dto.UserDto;
 import com.collabdesk.app.user.dto.UserUpdateDto;
+import com.collabdesk.app.user.service.UserService;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@PreAuthorize("hasRole('ADMIN')") 
+@PreAuthorize("hasRole('ROLE_ADMIN')") 
 public class UserController {
 
     @Autowired

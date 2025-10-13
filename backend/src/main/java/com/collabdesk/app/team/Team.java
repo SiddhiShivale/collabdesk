@@ -1,6 +1,5 @@
-package com.collabdesk.app.team.entity;
+package com.collabdesk.app.team;
 
-import com.collabdesk.app.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Objects;
+
+import com.collabdesk.app.user.User;
 
 @Entity
 @Data

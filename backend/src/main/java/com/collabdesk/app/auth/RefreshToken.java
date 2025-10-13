@@ -1,6 +1,5 @@
-package com.collabdesk.app.auth.entity;
+package com.collabdesk.app.auth;
 
-import com.collabdesk.app.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.Objects;
+
+import com.collabdesk.app.user.User;
 
 @Entity
 @Data
