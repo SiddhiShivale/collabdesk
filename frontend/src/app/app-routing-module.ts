@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth-guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { ProfileComponent } from './modules/profile/profile';
+
 
 const routes: Routes = [
   {
@@ -25,6 +27,11 @@ const routes: Routes = [
         path: 'admin',
         loadChildren: () =>
           import('./modules/admin/admin-module').then((m) => m.AdminModule),
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent,
+        canActivate: [AuthGuard],
       },
       {
         path: 'team-lead',

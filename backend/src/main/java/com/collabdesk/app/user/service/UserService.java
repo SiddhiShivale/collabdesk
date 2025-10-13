@@ -1,6 +1,15 @@
 package com.collabdesk.app.user.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.collabdesk.app.mapper.UserMapper;
+import com.collabdesk.app.user.dto.ProfileResponseDto;
 import com.collabdesk.app.user.dto.UserDto;
 import com.collabdesk.app.user.dto.UserUpdateDto;
 import com.collabdesk.app.user.entity.Role;
@@ -8,12 +17,6 @@ import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -65,4 +68,17 @@ public class UserService {
         }
         userRepository.deleteById(userId);
     }
+    
+    @Transactional(readOnly = true)
+    public ProfileResponseDto getCurrentUserProfile() {
+        User currentUser = getCurrentUserEntity();
+        return ProfileResponseDto.fromEntity(currentUser);
+    }
+    
+    private User getCurrentUserEntity() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found in database"));
+    }
+
 }

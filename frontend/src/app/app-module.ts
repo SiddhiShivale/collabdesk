@@ -11,7 +11,8 @@ import { AdminModule } from './modules/admin/admin-module';
 import { TeamLeadModule } from './modules/team-lead/team-lead-module';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './core/interceptors/jwt-interceptor';
-import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { ProfileModule } from './modules/profile/profile-module';
+
 
 @NgModule({
   declarations: [App],
@@ -24,6 +25,7 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout';
     DashboardModule,
     AdminModule,
     TeamLeadModule,
+    ProfileModule,
     HttpClientModule,
   ],
   providers: [

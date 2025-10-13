@@ -15,6 +15,12 @@ export interface UserUpdateDto {
   email: string;
   role: 'ADMIN' | 'TEAM_LEAD' | 'MEMBER';
 }
+export interface ProfileResponseDto {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +28,7 @@ export interface UserUpdateDto {
 export class UserService {
   private apiUrl = 'http://localhost:8080/api/users';
   private authUrl = 'http://localhost:8080/api/auth';
+  private profileUrl = 'http://localhost:8080/api/profile'
 
   constructor(private http: HttpClient) {}
 
@@ -44,4 +51,8 @@ export class UserService {
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  getProfileDetails(): Observable<ProfileResponseDto> {
+        return this.http.get<ProfileResponseDto>(this.profileUrl);
+    }
 }

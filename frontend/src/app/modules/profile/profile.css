@@ -1,0 +1,48 @@
+.profile-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card {
+    margin-top: 1.5rem;
+}
+
+.profile-detail {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-detail label {
+    display: block;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.profile-detail p {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.profile-role {
+    font-style: italic;
+    color: #27ae60; 
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
