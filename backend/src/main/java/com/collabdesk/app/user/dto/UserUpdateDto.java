@@ -1,6 +1,7 @@
 package com.collabdesk.app.user.dto;
 
-import com.collabdesk.app.user.Role;
+import com.collabdesk.app.user.entity.Role;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

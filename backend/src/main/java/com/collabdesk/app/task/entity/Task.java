@@ -1,7 +1,7 @@
-package com.collabdesk.app.task;
+package com.collabdesk.app.task.entity;
 
-import com.collabdesk.app.team.Team;
-import com.collabdesk.app.user.User;
+import com.collabdesk.app.team.entity.Team;
+import com.collabdesk.app.user.entity.User;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -7,10 +7,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.collabdesk.app.task.Task;
 import com.collabdesk.app.task.dto.TaskCreateDto;
 import com.collabdesk.app.task.dto.TaskResponseDto;
 import com.collabdesk.app.task.dto.TaskUpdateDto;
+import com.collabdesk.app.task.entity.Task;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class, TeamMapper.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

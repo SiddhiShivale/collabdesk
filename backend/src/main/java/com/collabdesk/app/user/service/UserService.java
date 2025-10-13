@@ -1,10 +1,10 @@
 package com.collabdesk.app.user.service;
 
 import com.collabdesk.app.mapper.UserMapper;
-import com.collabdesk.app.user.Role;
-import com.collabdesk.app.user.User;
 import com.collabdesk.app.user.dto.UserDto;
 import com.collabdesk.app.user.dto.UserUpdateDto;
+import com.collabdesk.app.user.entity.Role;
+import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;

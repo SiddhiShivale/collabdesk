@@ -1,6 +1,6 @@
 package com.collabdesk.app.user.dto;
 
-import com.collabdesk.app.user.Role;
+import com.collabdesk.app.user.entity.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.collabdesk.app.user.Role;
-import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.entity.Role;
+import com.collabdesk.app.user.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {

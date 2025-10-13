@@ -1,4 +1,4 @@
-package com.collabdesk.app.task;
+package com.collabdesk.app.task.entity;
 
 public enum TaskStatus {
     TO_DO,

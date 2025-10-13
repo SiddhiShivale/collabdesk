@@ -1,6 +1,6 @@
 package com.collabdesk.app.task.dto;
 
-import com.collabdesk.app.task.TaskStatus;
+import com.collabdesk.app.task.entity.TaskStatus;
 import com.collabdesk.app.team.dto.TeamDto;
 import com.collabdesk.app.user.dto.UserDto;
 

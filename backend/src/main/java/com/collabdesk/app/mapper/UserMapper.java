@@ -1,7 +1,7 @@
 package com.collabdesk.app.mapper;
 
-import com.collabdesk.app.user.User;
 import com.collabdesk.app.user.dto.UserDto;
+import com.collabdesk.app.user.entity.User;
 
 import org.mapstruct.Mapper;
 

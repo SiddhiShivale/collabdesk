@@ -1,4 +1,4 @@
-package com.collabdesk.app.user;
+package com.collabdesk.app.user.entity;
 
 public enum Role {
     ADMIN,

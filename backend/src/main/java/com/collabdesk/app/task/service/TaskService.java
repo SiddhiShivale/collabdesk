@@ -14,15 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.collabdesk.app.analytics.dto.AnalyticsDto;
 import com.collabdesk.app.mapper.TaskMapper;
-import com.collabdesk.app.task.Task;
-import com.collabdesk.app.task.TaskStatus;
 import com.collabdesk.app.task.dto.TaskCreateDto;
 import com.collabdesk.app.task.dto.TaskResponseDto;
 import com.collabdesk.app.task.dto.TaskUpdateDto;
+import com.collabdesk.app.task.entity.Task;
+import com.collabdesk.app.task.entity.TaskStatus;
 import com.collabdesk.app.task.repository.TaskRepository;
-import com.collabdesk.app.team.Team;
+import com.collabdesk.app.team.entity.Team;
 import com.collabdesk.app.team.repository.TeamRepository;
-import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;

@@ -10,12 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.collabdesk.app.mapper.TeamMapper;
 import com.collabdesk.app.mapper.UserMapper;
-import com.collabdesk.app.team.Team;
 import com.collabdesk.app.team.dto.TeamCreateDto;
 import com.collabdesk.app.team.dto.TeamDto;
+import com.collabdesk.app.team.entity.Team;
 import com.collabdesk.app.team.repository.TeamRepository;
-import com.collabdesk.app.user.User;
 import com.collabdesk.app.user.dto.UserDto;
+import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;

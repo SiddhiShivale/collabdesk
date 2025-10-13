@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.collabdesk.app.auth.RefreshToken;
+import com.collabdesk.app.auth.entity.RefreshToken;
 import com.collabdesk.app.auth.repository.RefreshTokenRepository;
 import com.collabdesk.app.user.repository.UserRepository;
 

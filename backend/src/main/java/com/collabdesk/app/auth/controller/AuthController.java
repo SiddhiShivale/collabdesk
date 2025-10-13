@@ -17,17 +17,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.collabdesk.app.auth.RefreshToken;
 import com.collabdesk.app.auth.dto.AuthRequest;
 import com.collabdesk.app.auth.dto.AuthResponse;
 import com.collabdesk.app.auth.dto.ForgotPasswordRequestDto;
 import com.collabdesk.app.auth.dto.RefreshTokenResponse;
 import com.collabdesk.app.auth.dto.RegisterRequest;
 import com.collabdesk.app.auth.dto.ResetPasswordRequestDto;
+import com.collabdesk.app.auth.entity.RefreshToken;
 import com.collabdesk.app.auth.service.AuthService;
 import com.collabdesk.app.auth.service.JwtService;
 import com.collabdesk.app.mapper.UserMapper;
-import com.collabdesk.app.user.User;
+import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import jakarta.servlet.http.Cookie;

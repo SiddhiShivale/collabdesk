@@ -1,6 +1,5 @@
 package com.collabdesk.app.task.dto;
 
-import com.collabdesk.app.task.TaskStatus;
 import jakarta.validation.constraints.FutureOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import com.collabdesk.app.task.entity.TaskStatus;
 
 @Data
 @AllArgsConstructor

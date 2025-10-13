@@ -1,4 +1,4 @@
-package com.collabdesk.app.user;
+package com.collabdesk.app.user.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

@@ -1,6 +1,7 @@
 package com.collabdesk.app.task.dto;
 
-import com.collabdesk.app.task.TaskStatus;
+import com.collabdesk.app.task.entity.TaskStatus;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

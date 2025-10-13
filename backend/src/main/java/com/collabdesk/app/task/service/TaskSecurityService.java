@@ -1,6 +1,6 @@
 package com.collabdesk.app.task.service;
 
-import com.collabdesk.app.task.Task;
+import com.collabdesk.app.task.entity.Task;
 import com.collabdesk.app.task.repository.TaskRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
