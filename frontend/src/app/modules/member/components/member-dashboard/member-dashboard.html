@@ -1,0 +1,20 @@
+<div class="member-dashboard">
+  <div class="dashboard-header">
+    <h1>My Tasks</h1>
+    <p>Drag and drop tasks to update their status.</p>
+  </div>
+
+  <div
+    class="task-section"
+    *ngIf="allTeamTasks$ | async as tasks; else loading"
+  >
+    <app-task-board
+      [tasks]="tasks"
+      (taskUpdated)="loadTasks()"
+    ></app-task-board>
+  </div>
+
+  <ng-template #loading>
+    <p>Loading your tasks...</p>
+  </ng-template>
+</div>

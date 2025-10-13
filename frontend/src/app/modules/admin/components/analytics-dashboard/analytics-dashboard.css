@@ -1,0 +1,207 @@
+:root {
+  --status-todo-color: #f97316;
+  --status-in-progress-color: #3b82f6;
+  --status-done-color: #10b981;
+  --status-blocked-color: #ef4444;
+  --chart-team-color: #6366f1;
+}
+
+.analytics-dashboard {
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+}
+.kpi-grid,
+.charts-grid {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.kpi-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+.charts-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.kpi-card,
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid #3b82f6;
+}
+.kpi-value {
+  font-size: 2.5em;
+  font-weight: 700;
+  color: #1f2937;
+}
+.kpi-label {
+  color: #6b7280;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+.status-done-bg {
+  border-left-color: var(--status-done-color);
+}
+.status-blocked-bg {
+  border-left-color: var(--status-blocked-color);
+}
+
+.pie-chart-container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+.pie-chart-wrapper {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+.pie-chart {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+}
+.pie-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background: #f7f7f7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #4b5563;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+.pie-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9em;
+  flex-grow: 1;
+}
+.pie-legend li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.status-todo .legend-dot {
+  background-color: var(--status-todo-color);
+}
+.status-in-progress .legend-dot {
+  background-color: var(--status-in-progress-color);
+}
+.status-done .legend-dot {
+  background-color: var(--status-done-color);
+}
+.status-blocked .legend-dot {
+  background-color: var(--status-blocked-color);
+}
+
+.chart-container {
+  margin-top: 20px;
+}
+.chart-bar-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  padding: 5px 0;
+}
+.chart-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.chart-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 25px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.chart-bar {
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+  transition: width 0.5s ease-out;
+  flex-shrink: 0;
+}
+.chart-percentage {
+  font-size: 0.8em;
+  font-weight: 500;
+  color: #4b5563;
+  margin-left: auto;
+  padding-right: 5px;
+}
+
+.status-todo {
+  color: var(--status-todo-color);
+}
+.status-in-progress {
+  color: var(--status-in-progress-color);
+}
+.status-done {
+  color: var(--status-done-color);
+}
+.status-blocked {
+  color: var(--status-blocked-color);
+}
+
+.status-todo .chart-bar {
+  background-color: var(--status-todo-color);
+}
+.status-in-progress .chart-bar {
+  background-color: var(--status-in-progress-color);
+}
+.status-done .chart-bar {
+  background-color: var(--status-done-color);
+}
+.status-blocked .chart-bar {
+  background-color: var(--status-blocked-color);
+}
+
+.chart-team {
+  color: #4f46e5;
+}
+.chart-team-bar {
+  background-color: #6366f1;
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .pie-chart-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

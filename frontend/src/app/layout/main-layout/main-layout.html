@@ -1,0 +1,17 @@
+<header class="main-header">
+  <div class="logo">
+    <a routerLink="/">CollabDesk</a>
+  </div>
+
+  <nav class="main-nav" *ngIf="currentUser$ | async as user">
+    <div class="user-info">
+      <button (click)="logout()" class="btn btn-secondary btn-sm">
+        Logout
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

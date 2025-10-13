@@ -1,0 +1,74 @@
+<p>task-list works!</p>
+<div class="list-header">
+  <h2>Task Management</h2>
+  <button class="btn btn-primary" (click)="openCreateTaskModal()">
+    + Create Task
+  </button>
+</div>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Status</th>
+      <th>Team</th>
+      <th>Creator</th>
+      <th>Assignees</th>
+      <th>Due Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let task of tasks$ | async">
+      <td>{{ task.title }}</td>
+
+      <td
+        [ngClass]="{
+          'status-todo': task.status === 'TO_DO',
+          'status-in-progress': task.status === 'IN_PROGRESS',
+          'status-done': task.status === 'DONE',
+          'status-blocked': task.status === 'BLOCKED'
+        }"
+      >
+        {{ task.status | titlecase }}
+      </td>
+
+      <td>{{ task.team.name }}</td>
+      <td>{{ task.creator.name }}</td>
+
+      <td>
+        <span *ngIf="task.assignees && task.assignees.length > 0">
+          {{ getAssigneeNames(task.assignees) }}
+        </span>
+        <span
+          *ngIf="!task.assignees || task.assignees.length === 0"
+          class="text-muted"
+        >
+          (Unassigned)
+        </span>
+      </td>
+
+      <td>{{ task.dueDate | date : "shortDate" }}</td>
+
+      <td class="actions">
+        <button
+          class="btn btn-secondary btn-sm"
+          (click)="openEditTaskModal(task)"
+        >
+          Edit
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="deleteTask(task.id)">
+          Delete
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<app-task-form
+  *ngIf="isTaskFormModalOpen"
+  [task]="selectedTask"
+  (close)="closeModals()"
+  (success)="handleSuccess()"
+>
+</app-task-form>

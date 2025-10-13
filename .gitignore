@@ -78,3 +78,25 @@ application-*.yml
 # Any local help files or notes that shouldn't be in the repo
 HELP.md
 /.metadata/
+
+# ===================================================================
+# Angular Frontend
+# ===================================================================
+
+# Angular build output
+frontend/dist/
+frontend/.angular/
+
+# Node dependencies
+frontend/node_modules/
+
+# Environment files (keep them local)
+frontend/src/environments/environment.prod.ts
+frontend/src/environments/environment.ts
+
+# IDE specific
+frontend/.vscode/
+frontend/.idea/
+
+# Angular test coverage reports
+frontend/coverage/

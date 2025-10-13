@@ -1,0 +1,58 @@
+<div class="modal-backdrop" (click)="close.emit()"></div>
+<div class="modal-content large">
+  <h2>Manage Members for: {{ team.name }}</h2>
+
+  <div class="add-member-section">
+    <select [(ngModel)]="selectedUserIdToAdd">
+      <option [ngValue]="null" disabled>Select a user to add</option>
+      <option *ngFor="let user of potentialMembers$ | async" [value]="user.id">
+        {{ user.name }}
+      </option>
+    </select>
+    <button
+      class="btn btn-primary"
+      (click)="addMember()"
+      [disabled]="!selectedUserIdToAdd"
+    >
+      Add Member
+    </button>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let member of team.members">
+        <td>
+          {{ member.name }}
+          <span *ngIf="member.id === team.lead.id" class="badge">Lead</span>
+        </td>
+        <td>{{ member.email }}</td>
+        <td>
+          <button
+            class="btn btn-danger btn-sm"
+            (click)="removeMember(member.id)"
+            [disabled]="member.id === team.lead.id"
+          >
+            Remove
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="modal-actions">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="closeAndSignalSuccess()"
+    >
+      Done
+    </button>
+  </div>
+</div>

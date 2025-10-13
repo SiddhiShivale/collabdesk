@@ -1,0 +1,30 @@
+<div class="modal-backdrop" (click)="close.emit()"></div>
+<div class="modal-content">
+  <button class="close-button" (click)="close.emit()">×</button>
+  <h2>{{ task.title }}</h2>
+  <div class="task-details">
+    <p>
+      <strong>Status:</strong>
+      <select [value]="task.status" (change)="onStatusChange($event)">
+        <option value="TO_DO">To Do</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="DONE">Done</option>
+        <option value="BLOCKED">Blocked</option>
+      </select>
+    </p>
+    <p><strong>Due Date:</strong> {{ task.dueDate | date : "mediumDate" }}</p>
+    <p>
+      <strong>Description:</strong>
+      {{ task.description || "No description provided." }}
+    </p>
+    <div>
+      <strong>Assignees:</strong>
+      <ul>
+        <li *ngFor="let assignee of task.assignees">{{ assignee.name }}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="modal-actions" *ngIf="isTeamLeadOrAdmin$ | async">
+    <button class="btn btn-danger" (click)="onDelete()">Delete Task</button>
+  </div>
+</div>

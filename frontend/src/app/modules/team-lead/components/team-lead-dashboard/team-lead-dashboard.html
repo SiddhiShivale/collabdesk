@@ -1,0 +1,46 @@
+<div class="team-lead-dashboard" *ngIf="myTeam$ | async as myTeam; else noTeam">
+  <div class="dashboard-header">
+    <h1>{{ myTeam.name }} Dashboard</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openTaskForm()">
+        + Create Task
+      </button>
+      <button class="btn btn-secondary" (click)="openMembersManager()">
+        Manage Members
+      </button>
+    </div>
+  </div>
+
+  <div class="task-section">
+    <app-task-board
+      [tasks]="teamTasks$ | async"
+      (taskUpdated)="loadTeamAndTasks()"
+    ></app-task-board>
+  </div>
+
+  <app-task-form
+    *ngIf="isTaskFormOpen"
+    [team]="myTeam"
+    (close)="closeModals()"
+    (success)="handleSuccess()"
+  >
+  </app-task-form>
+
+  <app-team-members
+    *ngIf="isMembersManagerOpen"
+    [team]="myTeam"
+    (close)="closeModals()"
+    (success)="handleSuccess()"
+  >
+  </app-team-members>
+</div>
+
+<ng-template #noTeam>
+  <div class="no-team-message">
+    <h2>No Team Found</h2>
+    <p>
+      You are not currently assigned as a lead for any team. Please contact an
+      administrator.
+    </p>
+  </div>
+</ng-template>

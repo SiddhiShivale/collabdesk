@@ -1,0 +1,39 @@
+<div class="modal-backdrop" (click)="close.emit()"></div>
+<div class="modal-content">
+  <form [formGroup]="teamForm" (ngSubmit)="onSubmit()">
+    <h2>{{ isEditMode ? "Edit Team" : "Create New Team" }}</h2>
+
+    <div class="form-group">
+      <label for="name">Team Name</label>
+      <input
+        type="text"
+        id="name"
+        formControlName="name"
+        class="form-control"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="teamLeadId">Team Lead</label>
+      <select id="teamLeadId" formControlName="teamLeadId" class="form-control">
+        <option [ngValue]="null" disabled>Select a Team Lead</option>
+        <option *ngFor="let user of teamLeads$ | async" [value]="user.id">
+          {{ user.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" (click)="close.emit()">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="teamForm.invalid"
+      >
+        {{ isEditMode ? "Save Changes" : "Create Team" }}
+      </button>
+    </div>
+  </form>
+</div>
