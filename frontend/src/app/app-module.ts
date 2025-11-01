@@ -9,7 +9,6 @@ import { AppComponent } from './app';
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
 import { HeaderComponent } from './shared/components/header/header';
 import { FooterComponent } from './shared/components/footer/footer';
-import { LayoutComponent } from './shared/components/layout/layout';
 import { AuthModule } from './features/auth/auth-module';
 import { ConfirmationModalComponent } from './shared/components/confirmation-modal/confirmation-modal';
 import { AlertModalComponent } from './shared/components/alert-modal/alert-modal';
@@ -19,7 +18,6 @@ import { AlertModalComponent } from './shared/components/alert-modal/alert-modal
     AppComponent,
     HeaderComponent,
     FooterComponent,
-    LayoutComponent,
   ],
   imports: [
     BrowserModule,
