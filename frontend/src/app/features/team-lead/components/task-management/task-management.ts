@@ -1,12 +1,37 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
-import { map, startWith, switchMap, tap } from 'rxjs/operators';
+import { map, startWith, switchMap, take, tap } from 'rxjs/operators';
 import { Team } from '../../../../core/models/team-model';
 import { Task, TaskStatus } from '../../../../core/models/task-model';
 import { TeamService } from '../../../../core/services/team';
 import { TaskService } from '../../../../core/services/task';
 import { formatDate } from '@angular/common';
+
+export function futureOrPresentDateValidator(
+  control: AbstractControl
+): ValidationErrors | null {
+  const selectedDate = new Date(control.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const userDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDate.getDate()
+  );
+
+  if (userDate < today) {
+    return { pastDate: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-task-management',
@@ -172,7 +197,7 @@ export class TaskManagementComponent implements OnInit {
       return;
     }
 
-    this.team$.subscribe((team) => {
+    this.team$.pipe(take(1)).subscribe((team) => {
       if (!team) return;
 
       const formValue = this.taskForm.value;
