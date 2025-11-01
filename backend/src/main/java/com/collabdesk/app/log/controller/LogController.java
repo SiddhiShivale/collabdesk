@@ -1,5 +1,7 @@
 package com.collabdesk.app.log.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,5 +26,10 @@ public class LogController {
     public ResponseEntity<Page<Log>> getAllLogs(
         @PageableDefault(sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(logRepository.findAll(pageable));
+    }
+    
+    @GetMapping("/all")
+    public ResponseEntity<List<Log>> getAllLogs() {
+        return ResponseEntity.ok(logRepository.findAll(Sort.by(Sort.Direction.DESC, "timestamp")));
     }
 }
