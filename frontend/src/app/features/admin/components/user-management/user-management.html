@@ -263,10 +263,10 @@
         *ngIf="!isEditMode"
         class="mb-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded"
       >
-        <p class="font-bold">Info</p>
+        <p class="font-bold">Next Step</p>
         <p>
-          An invitation will be sent to the provided email address for the user
-          to set up their account.
+          If the email address is valid, the user will receive an invitation to
+          set up their account.
         </p>
       </div>
       <div class="mb-6">
@@ -295,7 +295,7 @@
           [disabled]="!userForm.valid"
           class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isEditMode ? "Update User" : "Create User" }}
+          {{ isEditMode ? "Update User" : "Send Invitation" }}
         </button>
       </div>
     </form>

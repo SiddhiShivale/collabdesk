@@ -236,11 +236,9 @@
       <p class="block text-gray-700 text-sm font-bold mb-2">
         Members ({{ viewingTeam.members.length }})
       </p>
-      <ul
-        class="list-disc list-inside bg-gray-100 p-3 rounded h-40 overflow-y-auto"
-      >
-        <li *ngFor="let member of viewingTeam.members">{{ member.name }}</li>
-      </ul>
+      <div class="space-y-2 bg-gray-100 p-3 rounded h-40 overflow-y-auto">
+        <p *ngFor="let member of viewingTeam.members">{{ member.name }}</p>
+      </div>
     </div>
     <div class="flex items-center justify-end">
       <button
