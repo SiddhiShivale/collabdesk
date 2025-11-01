@@ -13,27 +13,7 @@ import { User } from '../../../core/models/user-model';
 export class HeaderComponent {
   currentUser$: Observable<User | null>;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private authService: AuthService) {
     this.currentUser$ = this.authService.currentUser$;
-  }
-
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  getDashboardLink(): string {
-    const user = this.authService.getCurrentUser();
-    if (!user) return '/login';
-    switch (user.role) {
-      case 'ADMIN':
-        return '/admin/dashboard';
-      case 'TEAM_LEAD':
-        return '/team-lead/dashboard';
-      case 'MEMBER':
-        return '/member/my-tasks';
-      default:
-        return '/login';
-    }
   }
 }
