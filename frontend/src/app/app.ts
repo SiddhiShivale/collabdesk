@@ -13,6 +13,7 @@ import { User } from './core/models/user-model';
 export class AppComponent {
   isLoggedIn = false;
   currentUser: User | null = null;
+  isSidebarOpen = false;
 
   constructor(private authService: AuthService, private router: Router) {
     this.authService.currentUser$.subscribe((user) => {
@@ -27,6 +28,7 @@ export class AppComponent {
         )
       )
       .subscribe((event: NavigationEnd) => {
+        this.isSidebarOpen = false;
         if (
           event.url.includes('/login') ||
           event.url.includes('/setup-account') ||
@@ -38,6 +40,10 @@ export class AppComponent {
           this.isLoggedIn = this.authService.isAuthenticated();
         }
       });
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
   }
 
   logout() {
