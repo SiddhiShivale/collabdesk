@@ -1,36 +1,39 @@
-import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NgChartsModule } from 'ng2-charts';
 
 import { AppRoutingModule } from './app-routing-module';
-import { App } from './app';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { AuthModule } from './modules/auth/auth-module';
-import { DashboardModule } from './modules/dashboard/dashboard-module';
-import { AdminModule } from './modules/admin/admin-module';
-import { TeamLeadModule } from './modules/team-lead/team-lead-module';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { JwtInterceptor } from './core/interceptors/jwt-interceptor';
-import { ProfileModule } from './modules/profile/profile-module';
-
+import { AppComponent } from './app';
+import { AuthInterceptor } from './core/interceptors/auth-interceptor';
+import { HeaderComponent } from './shared/components/header/header';
+import { FooterComponent } from './shared/components/footer/footer';
+import { LayoutComponent } from './shared/components/layout/layout';
+import { AuthModule } from './features/auth/auth-module';
+import { ConfirmationModalComponent } from './shared/components/confirmation-modal/confirmation-modal';
+import { AlertModalComponent } from './shared/components/alert-modal/alert-modal';
 
 @NgModule({
-  declarations: [App],
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    FooterComponent,
+    LayoutComponent,
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    DragDropModule,
-
-    AuthModule,
-    DashboardModule,
-    AdminModule,
-    TeamLeadModule,
-    ProfileModule,
     HttpClientModule,
+    ReactiveFormsModule,
+    NgChartsModule,
+    AuthModule,
+    ConfirmationModalComponent,
+    AlertModalComponent
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
-  bootstrap: [App],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

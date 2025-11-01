@@ -1,77 +1,68 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from './auth';
-import { Team } from './team';
-
-export type TaskStatus = 'TO_DO' | 'IN_PROGRESS' | 'DONE' | 'BLOCKED';
-
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  dueDate: string;
-  assignees: User[];
-  creator: User;
-  team: Team;
-}
+import { Task, TaskStatus, Importance } from '../models/task-model';
+import { TaskAssignment } from '../models/task-assignment-model';
 
 export interface TaskCreateDto {
   title: string;
-  description?: string;
-  dueDate?: string;
+  description: string;
+  importance: Importance;
   teamId: number;
   assigneeIds: number[];
+  dueDate: string;
+  dependsOnTaskId?: number;
 }
 
-export interface AnalyticsDto {
-  totalTasks: number;
-  totalUsers: number;
-  totalTeams: number;
-
-  overdueTasks: number;
-  completionRate: number;
-
-  tasksByStatus: { [status: string]: number };
-  tasksByTeam: { [teamName: string]: number };
+export interface TaskUpdateDto {
+  title?: string;
+  description?: string;
+  importance?: Importance;
+  assigneeIds?: number[];
+  dueDate?: string;
+  dependsOnTaskId?: number;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
-  private apiUrl = 'http://localhost:8080/api';
+  private baseUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
   getTasksForTeam(teamId: number): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/teams/${teamId}/tasks`);
+    return this.http.get<Task[]>(`${this.baseUrl}/teams/${teamId}/tasks`);
   }
 
-  getPrioritizedTasks(): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/tasks/prioritized`);
+  createTask(taskData: TaskCreateDto): Observable<Task> {
+    return this.http.post<Task>(`${this.baseUrl}/tasks`, taskData);
   }
 
-  createTask(task: TaskCreateDto): Observable<Task> {
-    return this.http.post<Task>(`${this.apiUrl}/tasks`, task);
-  }
-
-  updateTaskStatus(taskId: number, status: TaskStatus): Observable<Task> {
-    return this.http.patch<Task>(`${this.apiUrl}/tasks/${taskId}/status`, {
-      status,
-    });
+  updateTask(taskId: number, taskData: TaskUpdateDto): Observable<Task> {
+    return this.http.put<Task>(`${this.baseUrl}/tasks/${taskId}`, taskData);
   }
 
   deleteTask(taskId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/tasks/${taskId}`);
+    return this.http.delete<void>(`${this.baseUrl}/tasks/${taskId}`);
   }
 
-  getAllTasks(): Observable<Task[]> {
-    return this.http.get<Task[]>(`${this.apiUrl}/tasks`);
+  getPrioritizedTaskAssignmentsForCurrentUser(): Observable<TaskAssignment[]> {
+    return this.http.get<TaskAssignment[]>(`${this.baseUrl}/tasks/prioritized`);
   }
 
-  getSystemAnalytics(): Observable<AnalyticsDto> {
-    return this.http.get<AnalyticsDto>(`${this.apiUrl}/analytics/dashboard`);
+  updateTaskAssignmentStatus(
+    assignmentId: number,
+    status: TaskStatus
+  ): Observable<TaskAssignment> {
+    const payload = { status };
+    return this.http.patch<TaskAssignment>(
+      `${this.baseUrl}/task-assignments/${assignmentId}/status`,
+      payload
+    );
+  }
+
+  getAllTasksForAdmin(): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.baseUrl}/tasks`);
   }
 }

@@ -1,6 +1,6 @@
-
 package com.collabdesk.app.task.dto;
 
+import com.collabdesk.app.task.entity.Importance;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,6 +22,9 @@ public class TaskCreateDto {
 
     private String description;
 
+    @NotNull(message = "Importance cannot be null")
+    private Importance importance;
+
     @NotNull(message = "Team ID cannot be null")
     private Long teamId;
 
@@ -30,5 +33,6 @@ public class TaskCreateDto {
 
     @FutureOrPresent(message = "Due date must be in the present or future")
     private LocalDate dueDate;
-
+    
+    private Long dependsOnTaskId;
 }

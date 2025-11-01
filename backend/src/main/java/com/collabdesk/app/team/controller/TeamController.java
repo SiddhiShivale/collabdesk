@@ -37,9 +37,9 @@ public class TeamController {
     }
     
     @DeleteMapping("/{teamId}")
-    @PreAuthorize("hasRole('ADMIN')") // Admin is the only one who can delete a whole team
+    @PreAuthorize("hasRole('ADMIN')") 
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
-        teamService.deleteTeam(teamId); // You need to implement this service method
+        teamService.deleteTeam(teamId); 
         return ResponseEntity.noContent().build();
     }
     
@@ -47,9 +47,9 @@ public class TeamController {
     @PreAuthorize("hasRole('ADMIN') or @teamSecurityService.isTeamLead(#teamId, principal.username)")
     public ResponseEntity<TeamDto> updateTeam(
             @PathVariable Long teamId, 
-            @RequestBody @Valid TeamCreateDto updateDto) { // Assuming TeamCreateDto or similar for update
+            @RequestBody @Valid TeamCreateDto updateDto) { 
         
-        TeamDto updatedTeam = teamService.updateTeam(teamId, updateDto); // You need to implement this service method
+        TeamDto updatedTeam = teamService.updateTeam(teamId, updateDto); 
         return ResponseEntity.ok(updatedTeam);
     }
 
@@ -84,7 +84,6 @@ public class TeamController {
     @GetMapping("/my-team")
     @PreAuthorize("hasRole('TEAM_LEAD')")
     public ResponseEntity<TeamDto> getMyTeam(Principal principal) {
-        // principal.getName() will give you the username of the currently logged-in user
         TeamDto team = teamService.getTeamByLeadUsername(principal.getName());
         return ResponseEntity.ok(team);
     }

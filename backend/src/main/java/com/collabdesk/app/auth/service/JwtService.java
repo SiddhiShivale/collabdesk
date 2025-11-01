@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.collabdesk.app.auth.entity.RefreshToken;
 import com.collabdesk.app.auth.repository.RefreshTokenRepository;
+import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
 
 import io.jsonwebtoken.Claims;
@@ -68,10 +69,16 @@ public class JwtService {
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    
     @Transactional
     public RefreshToken createRefreshToken(String username) {
+        User user = userRepository.findByEmail(username).orElseThrow();
+        
+        refreshTokenRepository.deleteByUser_Id(user.getId());
+        refreshTokenRepository.flush(); 
+
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(userRepository.findByEmail(username).orElseThrow());
+        refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenExpiration));
         refreshToken.setToken(UUID.randomUUID().toString());
         return refreshTokenRepository.save(refreshToken);

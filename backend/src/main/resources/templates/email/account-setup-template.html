@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <tr>
+            <td align="center" style="padding: 40px 0 30px 0; background-color: #4A5568; color: #ffffff; border-radius: 8px 8px 0 0;">
+                <h1 style="margin: 0;">Welcome to CollabDesk!</h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px;">
+                <h2 style="color: #2D3748;">Complete Your Account Setup</h2>
+                <p style="margin: 20px 0; color: #718096; line-height: 1.5;">Hello,</p>
+                <p style="margin: 20px 0; color: #718096; line-height: 1.5;">
+                    An account has been created for you on our platform. To get started, please set a password by clicking the button below.
+                </p>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td align="center" style="padding: 20px 0;">
+                            <a th:href="${setupUrl}" style="background-color: #4299E1; color: #ffffff; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Set Your Password</a>
+                        </td>
+                    </tr>
+                </table>
+                <p style="margin: 20px 0; color: #718096; line-height: 1.5;">
+                    This link is valid for 24 hours. If you did not expect this invitation, please ignore this email.
+                </p>
+                <p style="margin: 40px 0 0 0; color: #718096; line-height: 1.5;">
+                    Thank you,<br/>The CollabDesk Team
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 20px 30px; background-color: #EDF2F7; border-radius: 0 0 8px 8px; color: #A0AEC0; font-size: 12px;">
+                &copy; 2025 CollabDesk. All rights reserved.
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

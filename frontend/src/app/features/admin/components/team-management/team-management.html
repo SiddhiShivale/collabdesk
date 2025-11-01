@@ -1,0 +1,263 @@
+<div class="container mx-auto p-4 sm:p-6">
+  <div
+    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6"
+  >
+    <h1 class="text-3xl font-bold text-gray-800">Team Management</h1>
+    <button
+      (click)="openAddModal()"
+      class="mt-4 sm:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105"
+    >
+      + Add Team
+    </button>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div
+      class="px-5 py-3 flex flex-col sm:flex-row justify-between items-center border-b border-gray-200"
+    >
+      <div class="flex items-center mb-2 sm:mb-0">
+        <label for="pageSizeTeam" class="text-xs text-gray-600 mr-2"
+          >Show:</label
+        >
+        <select
+          id="pageSizeTeam"
+          [value]="pageSize"
+          (change)="onPageSizeChange($event)"
+          class="border border-gray-300 rounded text-sm px-2 py-1"
+        >
+          <option *ngFor="let size of pageSizes" [value]="size">
+            {{ size }}
+          </option>
+        </select>
+        <span class="text-xs text-gray-600 ml-2">entries</span>
+      </div>
+      <div class="text-xs text-gray-600" *ngIf="pagedTeams$ | async as teams">
+        Showing {{ teams.length > 0 ? currentPage * pageSize + 1 : 0 }} -
+        {{ currentPage * pageSize + teams.length }} of {{ totalElements }}
+      </div>
+    </div>
+
+    <div class="p-4 border-b border-gray-200">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <input
+          [formControl]="nameFilter"
+          type="text"
+          placeholder="Filter by team name..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
+        <input
+          [formControl]="leadFilter"
+          type="text"
+          placeholder="Filter by team lead..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full leading-normal">
+        <thead>
+          <tr>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Team Name
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Team Lead
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Members
+            </th>
+            <th
+              class="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+            >
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody *ngIf="pagedTeams$ | async as teams">
+          <tr *ngFor="let team of teams" class="hover:bg-gray-50">
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              <p class="text-gray-900 font-semibold whitespace-no-wrap">
+                {{ team.name }}
+              </p>
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              <p class="text-gray-900 whitespace-no-wrap">
+                {{ team.lead.name }}
+              </p>
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              <p class="text-gray-900 whitespace-no-wrap">
+                {{ team.members.length }}
+              </p>
+            </td>
+            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              <button
+                (click)="openViewModal(team)"
+                class="text-green-600 hover:text-green-900 mr-4 font-medium"
+              >
+                View
+              </button>
+              <button
+                (click)="openEditModal(team)"
+                class="text-indigo-600 hover:text-indigo-900 mr-4 font-medium"
+              >
+                Edit
+              </button>
+              <button
+                (click)="deleteTeam(team.id)"
+                class="text-red-600 hover:text-red-900 font-medium"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="teams.length === 0">
+            <td colspan="4" class="text-center py-10 text-gray-500">
+              No teams match the current filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="px-5 py-3 flex justify-end items-center border-t border-gray-200"
+    >
+      <div class="flex">
+        <button
+          (click)="onPageChange(currentPage - 1)"
+          [disabled]="currentPage === 0"
+          class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-l-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <button
+          (click)="onPageChange(currentPage + 1)"
+          [disabled]="(currentPage + 1) * pageSize >= totalElements"
+          class="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-200 rounded-r-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="isModalVisible"
+  class="fixed inset-0 bg-gray-900/75 flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+    <h2 class="text-2xl font-bold mb-6">
+      {{ isEditMode ? "Edit Team" : "Create New Team" }}
+    </h2>
+    <form [formGroup]="teamForm" (ngSubmit)="onSubmit()">
+      <div class="mb-4">
+        <label for="name" class="block text-gray-700 text-sm font-bold mb-2"
+          >Team Name</label
+        >
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2"
+          [ngClass]="{
+            'border-red-500 focus:ring-red-500':
+              teamForm.get('name')?.invalid && teamForm.get('name')?.touched,
+            'border-gray-300 focus:ring-indigo-500':
+              !teamForm.get('name')?.invalid || !teamForm.get('name')?.touched
+          }"
+        />
+        <div
+          *ngIf="teamForm.get('name')?.invalid && teamForm.get('name')?.touched"
+          class="text-red-500 text-xs mt-1"
+        >
+          <p *ngIf="teamForm.get('name')?.errors?.['required']">
+            Team Name is required.
+          </p>
+        </div>
+      </div>
+      <div class="mb-6">
+        <label
+          for="teamLeadId"
+          class="block text-gray-700 text-sm font-bold mb-2"
+          >Assign Team Lead</label
+        >
+        <ng-select
+          id="teamLeadId"
+          [items]="(teamLeads$ | async) || []"
+          bindLabel="name"
+          bindValue="id"
+          formControlName="teamLeadId"
+          placeholder="Search for a user to be team lead..."
+        ></ng-select>
+      </div>
+      <div class="flex items-center justify-end pt-4 border-t border-gray-200">
+        <button
+          (click)="closeModal()"
+          type="button"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg mr-2"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="!teamForm.valid"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ isEditMode ? "Update Team" : "Create Team" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div
+  *ngIf="isViewModalVisible && viewingTeam"
+  class="fixed inset-0 bg-gray-900/75 flex items-center justify-center z-50 p-4"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-8">
+    <h2 class="text-2xl font-bold mb-2">Team Details</h2>
+    <h3 class="text-xl font-semibold text-indigo-600 mb-6">
+      {{ viewingTeam.name }}
+    </h3>
+    <div class="mb-4">
+      <p class="block text-gray-700 text-sm font-bold mb-1">Team Lead</p>
+      <p class="bg-gray-100 p-3 rounded">{{ viewingTeam.lead.name }}</p>
+    </div>
+    <div class="mb-6">
+      <p class="block text-gray-700 text-sm font-bold mb-2">
+        Members ({{ viewingTeam.members.length }})
+      </p>
+      <ul
+        class="list-disc list-inside bg-gray-100 p-3 rounded h-40 overflow-y-auto"
+      >
+        <li *ngFor="let member of viewingTeam.members">{{ member.name }}</li>
+      </ul>
+    </div>
+    <div class="flex items-center justify-end">
+      <button
+        (click)="closeViewModal()"
+        type="button"
+        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  *ngIf="isConfirmModalVisible"
+  title="Confirm Team Deletion"
+  message="Are you sure you want to delete this team? This action cannot be undone."
+  confirmButtonText="Yes, Delete Team"
+  (confirmed)="handleDeleteConfirmation($event)"
+></app-confirmation-modal>

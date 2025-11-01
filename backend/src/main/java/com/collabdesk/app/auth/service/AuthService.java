@@ -1,19 +1,23 @@
 package com.collabdesk.app.auth.service;
 
-import com.collabdesk.app.auth.dto.RegisterRequest;
-import com.collabdesk.app.auth.repository.RefreshTokenRepository;
-import com.collabdesk.app.user.entity.Role;
-import com.collabdesk.app.user.entity.User;
-import com.collabdesk.app.user.repository.UserRepository;
-import com.collabdesk.app.util.EmailService;
-import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Random;
+import com.collabdesk.app.auth.dto.RegisterRequest;
+import com.collabdesk.app.auth.dto.SetupAccountRequestDto;
+import com.collabdesk.app.auth.repository.RefreshTokenRepository;
+import com.collabdesk.app.user.entity.Role;
+import com.collabdesk.app.user.entity.User;
+import com.collabdesk.app.user.repository.UserRepository;
+import com.collabdesk.app.util.EmailService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AuthService {
@@ -30,6 +34,7 @@ public class AuthService {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+
     @Transactional
     public User registerUser(RegisterRequest registerRequest) {
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
@@ -39,15 +44,35 @@ public class AuthService {
         User user = new User();
         user.setName(registerRequest.getName());
         user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setRole(Role.valueOf(registerRequest.getRole().toUpperCase()));
+        
+        String token = UUID.randomUUID().toString();
+        user.setAccountSetupToken(token);
+        user.setAccountSetupTokenExpiry(LocalDateTime.now().plusHours(24)); 
+        user.setEnabled(false); 
 
-        try {
-            user.setRole(Role.valueOf(registerRequest.getRole().toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid role specified: " + registerRequest.getRole());
+        User savedUser = userRepository.save(user);
+        
+        emailService.sendAccountSetupEmail(savedUser.getEmail(), token);
+
+        return savedUser;
+    }
+    
+    @Transactional
+    public void setupAccount(SetupAccountRequestDto setupDto) {
+        User user = userRepository.findByAccountSetupToken(setupDto.getToken())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired setup token."));
+
+        if (user.getAccountSetupTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Invalid or expired setup token.");
         }
 
-        return userRepository.save(user);
+        user.setPassword(passwordEncoder.encode(setupDto.getPassword()));
+        user.setEnabled(true);
+        user.setAccountSetupToken(null); 
+        user.setAccountSetupTokenExpiry(null);
+
+        userRepository.save(user);
     }
 
     @Transactional

@@ -1,37 +1,35 @@
 package com.collabdesk.app.mapper;
 
-import java.util.List;
-
+import com.collabdesk.app.task.dto.TaskResponseDto;
+import com.collabdesk.app.task.dto.UserAssignmentStatusDto;
+import com.collabdesk.app.task.entity.Task;
+import com.collabdesk.app.task.entity.TaskAssignment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.collabdesk.app.task.dto.TaskCreateDto;
-import com.collabdesk.app.task.dto.TaskResponseDto;
-import com.collabdesk.app.task.dto.TaskUpdateDto;
-import com.collabdesk.app.task.entity.Task;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class, TeamMapper.class},
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", uses = {UserMapper.class, TeamMapper.class})
 public interface TaskMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "creator", ignore = true)
-    @Mapping(target = "team", ignore = true) 
-    @Mapping(target = "assignees", ignore = true) 
-    Task toTask(TaskCreateDto taskCreateDto);
-
+    @Mapping(source = "dependsOn", target = "dependsOn")
+    @Mapping(source = "assignments", target = "assignments") 
     TaskResponseDto toTaskResponseDto(Task task);
-    
+
     List<TaskResponseDto> toTaskResponseDtoList(List<Task> tasks);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "creator", ignore = true)
-    @Mapping(target = "team", ignore = true) 
-    @Mapping(target = "assignees", ignore = true) 
-    void updateTaskFromDto(TaskUpdateDto taskUpdateDto, @MappingTarget Task task);
-    
-    
+    default List<UserAssignmentStatusDto> mapAssignments(List<TaskAssignment> assignments) {
+        if (assignments == null) {
+            return null;
+        }
+        return assignments.stream()
+                .map(assignment -> new UserAssignmentStatusDto(
+                        assignment.getUser().getId(),
+                        assignment.getUser().getName(),
+                        assignment.getStatus()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }

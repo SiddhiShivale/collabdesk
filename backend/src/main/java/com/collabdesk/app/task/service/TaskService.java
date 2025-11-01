@@ -2,9 +2,11 @@ package com.collabdesk.app.task.service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,188 +15,234 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.collabdesk.app.analytics.dto.AnalyticsDto;
+import com.collabdesk.app.mapper.TaskAssignmentMapper;
 import com.collabdesk.app.mapper.TaskMapper;
+import com.collabdesk.app.task.dto.TaskAssignmentDto;
 import com.collabdesk.app.task.dto.TaskCreateDto;
 import com.collabdesk.app.task.dto.TaskResponseDto;
 import com.collabdesk.app.task.dto.TaskUpdateDto;
 import com.collabdesk.app.task.entity.Task;
+import com.collabdesk.app.task.entity.TaskAssignment;
 import com.collabdesk.app.task.entity.TaskStatus;
+import com.collabdesk.app.task.repository.TaskAssignmentRepository;
 import com.collabdesk.app.task.repository.TaskRepository;
 import com.collabdesk.app.team.entity.Team;
 import com.collabdesk.app.team.repository.TeamRepository;
 import com.collabdesk.app.user.entity.User;
 import com.collabdesk.app.user.repository.UserRepository;
+import com.collabdesk.app.util.EmailService;
 
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class TaskService {
 
-	@Autowired
-	private TaskRepository taskRepository;
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private TeamRepository teamRepository;
-	@Autowired
-	private TaskMapper taskMapper;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TeamRepository teamRepository;
+    @Autowired
+    private TaskAssignmentRepository taskAssignmentRepository;
+    @Autowired
+    private TaskMapper taskMapper;
+    @Autowired
+    private TaskAssignmentMapper taskAssignmentMapper; 
+    @Autowired
+    private EmailService emailService;
 
-	@Transactional(readOnly = true)
-	public AnalyticsDto getSystemAnalytics() {
-		List<Task> allTasks = taskRepository.findAll();
-		long totalTasks = allTasks.size();
+    @Transactional(readOnly = true)
+    public AnalyticsDto getSystemAnalytics() {
+        long totalTasks = taskRepository.count();
+        long totalUsers = userRepository.count();
+        long totalTeams = teamRepository.count();
 
-		long totalUsers = userRepository.count();
-		long totalTeams = teamRepository.count();
+        List<TaskAssignment> allAssignments = taskAssignmentRepository.findAll();
 
-		Map<String, Long> tasksByStatus = allTasks.stream()
-				.collect(Collectors.groupingBy(task -> task.getStatus().name(), Collectors.counting()));
+        Map<String, Long> tasksByStatus = allAssignments.stream()
+                .collect(Collectors.groupingBy(assignment -> assignment.getStatus().name(), Collectors.counting()));
 
-		long doneTasks = tasksByStatus.getOrDefault(TaskStatus.DONE.name(), 0L);
+        long doneAssignments = tasksByStatus.getOrDefault(TaskStatus.DONE.name(), 0L);
+        double completionRate = (allAssignments.size() > 0)
+                ? Math.round(((double) doneAssignments / allAssignments.size()) * 100.0)
+                : 0.0;
 
-		long overdueTasks = allTasks.stream().filter(task -> task.getDueDate() != null
-				&& task.getDueDate().isBefore(LocalDate.now()) && task.getStatus() != TaskStatus.DONE).count();
+        long overdueTasks = taskRepository.findAll().stream()
+                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDate.now()))
+                .filter(task -> task.getAssignments().stream().anyMatch(a -> a.getStatus() != TaskStatus.DONE))
+                .count();
 
-		double completionRate = (totalTasks > 0)
+        Map<String, Long> tasksByTeam = taskRepository.findAll().stream()
+                .filter(task -> task.getTeam() != null && task.getAssignments().stream().anyMatch(a -> a.getStatus() != TaskStatus.DONE))
+                .collect(Collectors.groupingBy(task -> task.getTeam().getName(), Collectors.counting()));
 
-				? Math.round(((double) doneTasks / totalTasks) * 10000.0) / 100.0
-				: 0.0;
+        return new AnalyticsDto(totalTasks, totalUsers, totalTeams, overdueTasks, completionRate, tasksByStatus, tasksByTeam);
+    }
 
-		Map<String, Long> tasksByTeam = allTasks.stream()
-				.filter(task -> task.getTeam() != null && task.getStatus() != TaskStatus.DONE)
-				.collect(Collectors.groupingBy(task -> task.getTeam().getName(), Collectors.counting()));
+    @Transactional
+    public TaskResponseDto createTask(TaskCreateDto createDto) {
+        User creator = getCurrentUserEntity();
+        Team team = teamRepository.findById(createDto.getTeamId())
+                .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + createDto.getTeamId()));
 
-		return new AnalyticsDto(totalTasks, totalUsers, totalTeams, overdueTasks, completionRate, tasksByStatus,
-				tasksByTeam);
-	}
+        List<User> assignees = userRepository.findAllById(createDto.getAssigneeIds());
+        if (assignees.size() != createDto.getAssigneeIds().size()) {
+            throw new EntityNotFoundException("One or more assignees not found.");
+        }
 
-	@Transactional
-	public TaskResponseDto createTask(TaskCreateDto createDto) {
-		User creator = getCurrentUser();
-		Team team = teamRepository.findById(createDto.getTeamId())
-				.orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + createDto.getTeamId()));
+        Task task = new Task();
+        task.setTitle(createDto.getTitle());
+        task.setDescription(createDto.getDescription());
+        task.setImportance(createDto.getImportance());
+        task.setDueDate(createDto.getDueDate());
+        task.setCreator(creator);
+        task.setTeam(team);
 
-		List<User> assignees = userRepository.findAllById(createDto.getAssigneeIds());
-		if (assignees.size() != createDto.getAssigneeIds().size()) {
-			throw new EntityNotFoundException("One or more assignees not found.");
-		}
+        if (createDto.getDependsOnTaskId() != null) {
+            Task dependency = taskRepository.findById(createDto.getDependsOnTaskId())
+                    .orElseThrow(() -> new EntityNotFoundException("Dependency task not found."));
+            task.setDependsOn(dependency);
+        }
 
-		Task task = taskMapper.toTask(createDto);
-		task.setCreator(creator);
-		task.setTeam(team);
-		task.setAssignees(assignees);
-		task.setStatus(TaskStatus.TO_DO); // Initial status
+        Task savedTask = taskRepository.save(task);
 
-		Task savedTask = taskRepository.save(task);
-		return taskMapper.toTaskResponseDto(savedTask);
-	}
+        List<TaskAssignment> assignments = new ArrayList<>();
+        for (User assignee : assignees) {
+            TaskAssignment assignment = new TaskAssignment(null, savedTask, assignee, TaskStatus.TO_DO);
+            assignments.add(assignment);
+            emailService.sendTaskAssignmentEmail(assignee.getEmail(), savedTask.getTitle(), creator.getName());
+        }
+        taskAssignmentRepository.saveAll(assignments);
+        savedTask.setAssignments(assignments);
 
-	@Transactional(readOnly = true)
-	public TaskResponseDto getTaskById(Long taskId) {
-		Task task = taskRepository.findById(taskId)
-				.orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
-		return taskMapper.toTaskResponseDto(task);
-	}
+        return taskMapper.toTaskResponseDto(savedTask);
+    }
 
-	@Transactional(readOnly = true)
-	public List<TaskResponseDto> getAllTasksForAdmin() {
-		List<Task> tasks = taskRepository.findAll();
-		return taskMapper.toTaskResponseDtoList(tasks);
-	}
+    @Transactional(readOnly = true)
+    public TaskResponseDto getTaskById(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+        return taskMapper.toTaskResponseDto(task);
+    }
 
-	@Transactional
-	public TaskResponseDto updateTask(Long taskId, TaskUpdateDto updateDto) {
-		Task existingTask = taskRepository.findById(taskId)
-				.orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+    @Transactional(readOnly = true)
+    public List<TaskResponseDto> getAllTasksForAdmin() {
+        return taskMapper.toTaskResponseDtoList(taskRepository.findAll());
+    }
 
-		taskMapper.updateTaskFromDto(updateDto, existingTask);
+    @Transactional
+    public TaskResponseDto updateTask(Long taskId, TaskUpdateDto updateDto) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
 
-		if (updateDto.getTeamId() != null) {
-			Team newTeam = teamRepository.findById(updateDto.getTeamId())
-					.orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + updateDto.getTeamId()));
-			existingTask.setTeam(newTeam);
-		}
+        if (updateDto.getTitle() != null) task.setTitle(updateDto.getTitle());
+        if (updateDto.getDescription() != null) task.setDescription(updateDto.getDescription());
+        if (updateDto.getImportance() != null) task.setImportance(updateDto.getImportance());
+        if (updateDto.getDueDate() != null) task.setDueDate(updateDto.getDueDate());
 
-		if (updateDto.getAssigneeIds() != null && !updateDto.getAssigneeIds().isEmpty()) {
-			List<User> newAssignees = userRepository.findAllById(updateDto.getAssigneeIds());
-			existingTask.setAssignees(newAssignees);
-		}
+        if (updateDto.getDependsOnTaskId() != null) {
+            if (updateDto.getDependsOnTaskId().equals(task.getId())) {
+                 throw new IllegalArgumentException("A task cannot depend on itself.");
+            }
+            Task dependency = taskRepository.findById(updateDto.getDependsOnTaskId())
+                    .orElseThrow(() -> new EntityNotFoundException("Dependency task not found."));
+            task.setDependsOn(dependency);
+        } else {
+            task.setDependsOn(null); 
+        }
+        
+        if (updateDto.getAssigneeIds() != null) {
+            List<User> newAssignees = userRepository.findAllById(updateDto.getAssigneeIds());
+            if (newAssignees.size() != updateDto.getAssigneeIds().size()) {
+                throw new EntityNotFoundException("One or more assignees not found.");
+            }
 
-		Task updatedTask = taskRepository.save(existingTask);
-		return taskMapper.toTaskResponseDto(updatedTask);
-	}
+            Map<Long, TaskAssignment> currentAssignmentsMap = task.getAssignments().stream()
+                    .collect(Collectors.toMap(a -> a.getUser().getId(), Function.identity()));
 
-	@Transactional
-	public TaskResponseDto updateTaskStatus(Long taskId, TaskStatus status) {
-		Task task = taskRepository.findById(taskId)
-				.orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
-		task.setStatus(status);
-		Task updatedTask = taskRepository.save(task);
-		return taskMapper.toTaskResponseDto(updatedTask);
-	}
+            task.getAssignments().removeIf(assignment -> !updateDto.getAssigneeIds().contains(assignment.getUser().getId()));
 
-	@Transactional
-	public void deleteTask(Long taskId) {
-		if (!taskRepository.existsById(taskId)) {
-			throw new EntityNotFoundException("Task not found with ID: " + taskId);
-		}
-		taskRepository.deleteById(taskId);
-	}
+            for (User assignee : newAssignees) {
+                if (!currentAssignmentsMap.containsKey(assignee.getId())) {
+                    TaskAssignment newAssignment = new TaskAssignment(null, task, assignee, TaskStatus.TO_DO);
+                    task.getAssignments().add(newAssignment);
+                    emailService.sendTaskAssignmentEmail(assignee.getEmail(), task.getTitle(), task.getCreator().getName());
+                }
+            }
+        }
 
-	@Transactional(readOnly = true)
-	public List<TaskResponseDto> getTasksByTeamId(Long teamId) {
-		if (!teamRepository.existsById(teamId)) {
-			throw new EntityNotFoundException("Team not found with ID: " + teamId);
-		}
-		return taskRepository.findByTeamId(teamId).stream().map(taskMapper::toTaskResponseDto)
-				.collect(Collectors.toList());
-	}
+        Task updatedTask = taskRepository.save(task);
+        return taskMapper.toTaskResponseDto(updatedTask);
+    }
 
-	@Transactional(readOnly = true)
-	public List<TaskResponseDto> getTasksWithSmartPrioritization() {
-		List<Task> tasks = taskRepository.findAll();
+    @Transactional
+    public void deleteTask(Long taskId) {
+        if (!taskRepository.existsById(taskId)) {
+            throw new EntityNotFoundException("Task not found with ID: " + taskId);
+        }
+        taskRepository.deleteById(taskId);
+    }
 
-		Comparator<Task> comparator = Comparator.comparingInt(this::calculatePriorityScore).reversed();
+    @Transactional(readOnly = true)
+    public List<TaskResponseDto> getTasksByTeamId(Long teamId) {
+        return taskMapper.toTaskResponseDtoList(taskRepository.findByTeamId(teamId));
+    }
 
-		return tasks.stream().sorted(comparator).map(taskMapper::toTaskResponseDto).collect(Collectors.toList());
-	}
+    @Transactional
+    public TaskAssignmentDto updateTaskAssignmentStatus(Long assignmentId, TaskStatus newStatus) {
+        TaskAssignment assignment = taskAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Task assignment not found with ID: " + assignmentId));
 
-	private int calculatePriorityScore(Task task) {
-		int score = 0;
+        Task task = assignment.getTask();
+        if (newStatus == TaskStatus.IN_PROGRESS && task.getDependsOn() != null &&
+            isDependencyIncompleteForUser(task.getDependsOn(), assignment.getUser())) {
+            throw new IllegalStateException("Cannot start task until its dependency is completed.");
+        }
 
-		// Priority based on status
-		switch (task.getStatus()) {
-		case IN_PROGRESS:
-			score += 1000;
-			break;
-		case TO_DO:
-			score += 500;
-			break;
-		case BLOCKED:
-			score -= 500;
-			break;
-		case DONE:
-			return Integer.MIN_VALUE;
-		}
+        assignment.setStatus(newStatus);
+        TaskAssignment updatedAssignment = taskAssignmentRepository.save(assignment);
+        emailService.sendTaskStatusUpdateEmail(assignment.getUser().getEmail(), task.getTitle(), newStatus.name());
+        return taskAssignmentMapper.toTaskAssignmentDto(updatedAssignment);
+    }
 
-		// Priority based on due date
-		if (task.getDueDate() != null) {
-			long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), task.getDueDate());
-			if (daysUntilDue < 0) {
-				score += 2000; // Overdue tasks are critical
-			} else if (daysUntilDue <= 3) {
-				score += 500; // Due soon
-			} else if (daysUntilDue <= 7) {
-				score += 200; // Due within a week
-			}
-		}
+    private boolean isDependencyIncompleteForUser(Task dependency, User user) {
+        return taskAssignmentRepository.findByTaskIdAndUserId(dependency.getId(), user.getId())
+                .map(assignment -> assignment.getStatus() != TaskStatus.DONE)
+                .orElse(true);
+    }
 
-		return score;
-	}
+    @Transactional(readOnly = true)
+    public List<TaskAssignmentDto> getPrioritizedTasksForCurrentUser() {
+        User currentUser = getCurrentUserEntity();
+        List<TaskAssignment> assignments = taskAssignmentRepository.findByUserId(currentUser.getId());
+        assignments.sort(Comparator.comparingInt((TaskAssignment a) -> calculatePriorityScore(a.getTask())).reversed());
+        return assignments.stream()
+                .map(taskAssignmentMapper::toTaskAssignmentDto)
+                .collect(Collectors.toList());
+    }
 
-	private User getCurrentUser() {
-		String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-		return userRepository.findByEmail(userEmail)
-				.orElseThrow(() -> new EntityNotFoundException("Current user not found in database"));
-	}
+    private int calculatePriorityScore(Task task) {
+        int score = 0;
+        if (task.getImportance() != null) {
+            switch (task.getImportance()) {
+                case HIGH: score += 1500; break;
+                case MEDIUM: score += 750; break;
+                case LOW: score += 100; break;
+            }
+        }
+        if (task.getDueDate() != null) {
+            long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), task.getDueDate());
+            if (daysUntilDue < 0) score += 2000;
+            else if (daysUntilDue <= 3) score += 500;
+            else if (daysUntilDue <= 7) score += 200;
+        }
+        return score;
+    }
+
+    private User getCurrentUserEntity() {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found in database"));
+    }
 }

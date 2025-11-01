@@ -43,7 +43,7 @@ public class TeamService {
         Team team = new Team();
         team.setName(dto.getName());
         team.setLead(teamLead);
-        team.setMembers(new ArrayList<>(List.of(teamLead))); // The lead is also a member
+        team.setMembers(new ArrayList<>(List.of(teamLead)));
 
         Team savedTeam = teamRepository.save(team);
         return teamMapper.toTeamDto(savedTeam);
@@ -108,7 +108,7 @@ public class TeamService {
     
     @Transactional
     public TeamDto getTeamByLeadUsername(String username) {
-    	Team team = teamRepository.findByLead_Email(username) // Use the new method name here
+    	Team team = teamRepository.findByLead_Email(username)
                 .orElseThrow(() -> new EntityNotFoundException("No team found for lead with username: " + username));
                 
         return teamMapper.toTeamDto(team);
@@ -118,10 +118,6 @@ public class TeamService {
     public void deleteTeam(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Team not found with ID: " + teamId));
-        
-        team.getMembers().clear();
-        team.setLead(null);
-        teamRepository.save(team);
         
         teamRepository.delete(team);
     }

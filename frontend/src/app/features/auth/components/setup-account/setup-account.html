@@ -1,0 +1,69 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold text-center">
+      Set Up Your CollabDesk Account
+    </h2>
+
+    <div *ngIf="!token" class="text-red-500 text-center">
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <form
+      *ngIf="token && !successMessage"
+      [formGroup]="setupForm"
+      (ngSubmit)="onSubmit()"
+    >
+      <p class="text-center text-gray-600 mb-4">
+        Create a secure password to activate your account.
+      </p>
+      <div class="space-y-4">
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700"
+            >New Password</label
+          >
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+        <div>
+          <label
+            for="confirmPassword"
+            class="block text-sm font-medium text-gray-700"
+            >Confirm Password</label
+          >
+          <input
+            type="password"
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div
+            *ngIf="setupForm.errors?.['mismatch'] && setupForm.get('confirmPassword')?.touched"
+            class="text-red-500 text-xs mt-1"
+          >
+            Passwords do not match.
+          </div>
+        </div>
+      </div>
+      <div *ngIf="errorMessage" class="mt-4 text-red-500 text-sm">
+        {{ errorMessage }}
+      </div>
+      <div class="mt-6">
+        <button
+          type="submit"
+          [disabled]="!setupForm.valid || isSubmitting"
+          class="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+        >
+          Set Password and Activate
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="successMessage" class="text-center text-green-600">
+      <p>{{ successMessage }}</p>
+    </div>
+  </div>
+</div>

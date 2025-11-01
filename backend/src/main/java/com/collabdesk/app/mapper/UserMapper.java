@@ -1,16 +1,17 @@
 package com.collabdesk.app.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
 import com.collabdesk.app.user.dto.UserDto;
 import com.collabdesk.app.user.entity.User;
-
-import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 	
-    //Maps a User entity to a UserDto.
-    UserDto toUserDto(User user);
+	 @Mapping(source = "enabled", target = "enabled") 
+	 @Mapping(source = "deleted", target = "deleted")
+	 UserDto toUserDto(User user);
 
-    //Maps a UserDto to a User entity.
-    User toUser(UserDto userDto);
+	 User toUser(UserDto userDto);
 }

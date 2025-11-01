@@ -1,94 +1,88 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: 'ADMIN' | 'TEAM_LEAD' | 'MEMBER';
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  user: User;
-}
+import { User } from '../models/user-model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
-
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private baseUrl = 'http://localhost:8080/api/auth';
+  private currentUserSubject = new BehaviorSubject<User | null>(
+    this.getUserFromLocalStorage()
+  );
   public currentUser$ = this.currentUserSubject.asObservable();
-
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-
-  private accessToken: string | null = null;
 
   constructor(private http: HttpClient) {}
 
-  login(credentials: any): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/login`, credentials)
-      .pipe(
-        tap((response) =>
-          this.setAuthState(response.accessToken, response.user)
-        )
-      );
+  login(credentials: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/login`, credentials).pipe(
+      tap((response) => {
+        localStorage.setItem('accessToken', response.accessToken);
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        this.currentUserSubject.next(response.user);
+      })
+    );
   }
 
-  logout(): Observable<any> {
+  register(userInfo: {
+    name: string;
+    email: string;
+    role: string;
+  }): Observable<User> {
+    return this.http.post<User>(`${this.baseUrl}/register`, userInfo);
+  }
+
+  setupAccount(token: string, password: string): Observable<any> {
+    const payload = { token, password };
+    return this.http.post(`${this.baseUrl}/setup-account`, payload, {
+      responseType: 'text',
+    });
+  }
+
+  forgotPassword(email: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/logout`,
-      {},
+      `${this.baseUrl}/forgot-password`,
+      { email },
       { responseType: 'text' }
     );
   }
 
-  refreshToken(): Observable<{ accessToken: string }> {
-    return this.http
-      .post<{ accessToken: string }>(`${this.apiUrl}/refresh`, {})
-      .pipe(
-        tap((response) => {
-          this.accessToken = response.accessToken;
-        })
-      );
+  resetPassword(payload: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/reset-password`, payload, {
+      responseType: 'text',
+    });
   }
 
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  logout(): void {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('currentUser');
+    this.currentUserSubject.next(null);
   }
 
-  resetPassword(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password`, data);
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('accessToken');
   }
 
-  public get currentUserValue(): User | null {
+  getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  public get getAccessToken(): string | null {
-    return this.accessToken;
+  private getUserFromLocalStorage(): User | null {
+    const user = localStorage.getItem('currentUser');
+    return user ? JSON.parse(user) : null;
   }
 
-  private setAuthState(token: string, user: User): void {
-    this.accessToken = token;
-    this.currentUserSubject.next(user);
-    this.isAuthenticatedSubject.next(true);
-
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('currentUser', JSON.stringify(user));
-  }
-
-  private clearAuthState(): void {
-    this.accessToken = null;
-    this.currentUserSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('currentUser');
+  updateCurrentUser(updatedProfile: Partial<User>): void {
+    const currentUser = this.currentUserSubject.value;
+    if (currentUser) {
+      const newUser = { ...currentUser, ...updatedProfile };
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      this.currentUserSubject.next(newUser);
+    }
   }
 }

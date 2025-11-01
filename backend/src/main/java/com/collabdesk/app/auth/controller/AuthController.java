@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.collabdesk.app.auth.dto.SetupAccountRequestDto;
 
 import com.collabdesk.app.auth.dto.AuthRequest;
 import com.collabdesk.app.auth.dto.AuthResponse;
@@ -69,7 +70,7 @@ public class AuthController {
         if (authentication.isAuthenticated()) {
    
             UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
-            String accessToken = jwtService.generateToken(userDetails); // Pass the full object
+            String accessToken = jwtService.generateToken(userDetails); 
 
             User user = userRepository.findByEmail(authRequest.getEmail()).orElseThrow();
             RefreshToken refreshToken = jwtService.createRefreshToken(user.getEmail());
@@ -86,7 +87,13 @@ public class AuthController {
         User registeredUser = authService.registerUser(registerRequest);
         return ResponseEntity.ok(userMapper.toUserDto(registeredUser));
     }
-
+    
+    @PostMapping("/setup-account")
+    public ResponseEntity<?> setupAccount(@RequestBody @Valid SetupAccountRequestDto setupDto) {
+        authService.setupAccount(setupDto);
+        return ResponseEntity.ok("Account setup successful. You can now log in.");
+    }
+    
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String refreshToken = extractRefreshTokenFromCookie(request);

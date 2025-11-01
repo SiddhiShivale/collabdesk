@@ -1,58 +1,48 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from './auth';
-
-export interface Team {
-  id: number;
-  name: string;
-  lead: User;
-  members: User[];
-}
-
-export interface TeamCreateDto {
-  name: string;
-  teamLeadId: number;
-}
-
-export interface TeamUpdateDto {
-  name: string;
-  teamLeadId: number;
-}
+import { Team } from '../models/team-model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TeamService {
-  private apiUrl = 'http://localhost:8080/api/teams';
+  private baseUrl = 'http://localhost:8080/api/teams';
 
   constructor(private http: HttpClient) {}
 
-  getTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(this.apiUrl);
+  getAllTeams(): Observable<Team[]> {
+    return this.http.get<Team[]>(this.baseUrl);
   }
 
-  getMyTeam(): Observable<Team> {
-    return this.http.get<Team>(`${this.apiUrl}/my-team`);
+  createTeam(teamData: { name: string; teamLeadId: number }): Observable<Team> {
+    return this.http.post<Team>(this.baseUrl, teamData);
   }
 
-  createTeam(team: TeamCreateDto): Observable<Team> {
-    return this.http.post<Team>(this.apiUrl, team);
-  }
-
-  updateTeam(id: number, team: TeamUpdateDto): Observable<Team> {
-    return this.http.put<Team>(`${this.apiUrl}/${id}`, team);
+  updateTeam(
+    id: number,
+    teamData: { name: string; teamLeadId: number }
+  ): Observable<Team> {
+    return this.http.put<Team>(`${this.baseUrl}/${id}`, teamData);
   }
 
   deleteTeam(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  getMyTeam(): Observable<Team> {
+    return this.http.get<Team>(`${this.baseUrl}/my-team`);
   }
 
   addMemberToTeam(teamId: number, userId: number): Observable<Team> {
-    return this.http.post<Team>(`${this.apiUrl}/${teamId}/members`, { userId });
+    return this.http.post<Team>(`${this.baseUrl}/${teamId}/members`, {
+      userId,
+    });
   }
 
   removeMemberFromTeam(teamId: number, userId: number): Observable<Team> {
-    return this.http.delete<Team>(`${this.apiUrl}/${teamId}/members/${userId}`);
+    return this.http.delete<Team>(
+      `${this.baseUrl}/${teamId}/members/${userId}`
+    );
   }
 }
