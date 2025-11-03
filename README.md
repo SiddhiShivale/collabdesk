@@ -83,3 +83,12 @@ The project follows a modular architecture - the backend (Spring Boot) handles b
 | **Tailwind CSS** | Used for modern, mobile-friendly UI with fast styling and layout control. |
 | **NgCharts** | Added data visualization for analytics dashboards using Chart.js. |
 | **Angular CLI** | Streamlined project setup, builds, and testing with preconfigured tooling. |
+
+---
+
+## 🖼️ Screenshots
+
+### 🏠 Dashboard
+![Admin Dashboard](assets/screenshots/admin-dashboard.png)
+![Team Lead Dashboard](assets/screenshots/team-lead-dashboard.png)
+![Member Dashboard](assets/screenshots/member-dashboard.png)
