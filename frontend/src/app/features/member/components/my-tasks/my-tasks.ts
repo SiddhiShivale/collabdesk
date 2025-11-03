@@ -1,16 +1,14 @@
-// src/app/features/member/components/my-tasks/my-tasks.ts
 import { Component, OnInit } from '@angular/core';
 import { Task, TaskStatus, Importance } from '../../../../core/models/task-model';
 import { TaskService } from '../../../../core/services/task';
 import { TaskAssignment } from '../../../../core/models/task-assignment-model';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
-import { AlertModalComponent } from '../../../../shared/components/alert-modal/alert-modal'; // Import the alert modal
-
+import { AlertModalComponent } from '../../../../shared/components/alert-modal/alert-modal'; 
 @Component({
   selector: 'app-my-tasks',
   standalone: true,
-  imports: [CommonModule, DragDropModule, AlertModalComponent], // Add AlertModalComponent to imports
+  imports: [CommonModule, DragDropModule, AlertModalComponent],
   templateUrl: './my-tasks.html',
   styleUrls: ['./my-tasks.css']
 })
@@ -21,7 +19,6 @@ export class MyTasksComponent implements OnInit {
 
   selectedTask: Task | null = null;
 
-  // State for the custom alert modal
   isAlertVisible = false;
   alertTitle = '';
   alertMessage = '';
@@ -41,22 +38,16 @@ export class MyTasksComponent implements OnInit {
   }
 
   updateTaskStatus(assignment: TaskAssignment, newStatus: TaskStatus): void {
-    // If the user tries to start a blocked task via the button
     if (newStatus === 'IN_PROGRESS' && this.isTaskBlocked(assignment)) {
-      // FIX: Use the custom alert modal
       this.showAlert('Action Blocked', `Cannot start this task. Please complete the dependency task first: "${assignment.task.dependsOn?.title}"`);
       return;
     }
 
     this.taskService.updateTaskAssignmentStatus(assignment.id, newStatus).subscribe({
-      // THIS IS THE CRITICAL FIX:
-      // On success, we update the local object's status and then reload the lists.
       next: (updatedAssignment) => {
         assignment.status = updatedAssignment.status;
-        // Reload and re-sort the lists to reflect the change visually
         this.loadMyTaskAssignments(); 
       },
-      // On failure, we revert the UI by reloading everything from the server.
       error: () => {
         this.loadMyTaskAssignments();
         this.showAlert('Error', 'An error occurred while updating the task status.');
@@ -75,7 +66,6 @@ export class MyTasksComponent implements OnInit {
     return dependencyAssignment ? dependencyAssignment.status !== 'DONE' : false;
   }
 
-  // Helper methods for the custom alert
   showAlert(title: string, message: string): void {
     this.alertTitle = title;
     this.alertMessage = message;
@@ -86,7 +76,6 @@ export class MyTasksComponent implements OnInit {
     this.isAlertVisible = false;
   }
 
-  // Other helper methods
   getImportanceBorder(importance: Importance): string {
     switch (importance) {
       case 'HIGH': return 'border-red-500';
