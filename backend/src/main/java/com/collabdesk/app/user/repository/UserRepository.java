@@ -16,6 +16,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
     List<User> findByRoleNot(Role role);
     Optional<User> findByAccountSetupToken(String token);
+    List<User> findByRole(Role role);
 
     @Query(value = "SELECT * FROM users WHERE id = ?1", nativeQuery = true)
     Optional<User> findByIdEvenIfDeleted(Long id);
