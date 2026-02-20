@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
@@ -29,7 +30,11 @@ import lombok.RequiredArgsConstructor;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-@Table(name = "teams")
+@Table(name = "teams", indexes = {
+	    @Index(name = "idx_team_deleted", columnList = "deleted"),
+	    @Index(name = "idx_team_name", columnList = "name"),
+	    @Index(name = "idx_team_lead", columnList = "lead_id")
+	})
 @SQLDelete(sql = "UPDATE teams SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false")
 public class Team {

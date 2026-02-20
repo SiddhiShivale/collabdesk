@@ -58,24 +58,20 @@ public class TaskService {
         long totalUsers = userRepository.count();
         long totalTeams = teamRepository.count();
 
-        List<TaskAssignment> allAssignments = taskAssignmentRepository.findAll();
 
-        Map<String, Long> tasksByStatus = allAssignments.stream()
-                .collect(Collectors.groupingBy(assignment -> assignment.getStatus().name(), Collectors.counting()));
+        Map<String, Long> tasksByStatus = taskAssignmentRepository.countTasksByStatus().stream()
+                .collect(Collectors.toMap(obj -> obj[0].toString(), obj -> (Long) obj[1]));
 
+        long totalAssignments = tasksByStatus.values().stream().mapToLong(Long::longValue).sum();
         long doneAssignments = tasksByStatus.getOrDefault(TaskStatus.DONE.name(), 0L);
-        double completionRate = (allAssignments.size() > 0)
-                ? Math.round(((double) doneAssignments / allAssignments.size()) * 100.0)
+        double completionRate = (totalAssignments > 0)
+                ? Math.round(((double) doneAssignments / totalAssignments) * 100.0)
                 : 0.0;
 
-        long overdueTasks = taskRepository.findAll().stream()
-                .filter(task -> task.getDueDate() != null && task.getDueDate().isBefore(LocalDate.now()))
-                .filter(task -> task.getAssignments().stream().anyMatch(a -> a.getStatus() != TaskStatus.DONE))
-                .count();
+        long overdueTasks = taskRepository.countOverdueTasks();
+        Map<String, Long> tasksByTeam = taskRepository.countActiveTasksByTeam().stream()
+                .collect(Collectors.toMap(obj -> (String) obj[0], obj -> (Long) obj[1]));
 
-        Map<String, Long> tasksByTeam = taskRepository.findAll().stream()
-                .filter(task -> task.getTeam() != null && task.getAssignments().stream().anyMatch(a -> a.getStatus() != TaskStatus.DONE))
-                .collect(Collectors.groupingBy(task -> task.getTeam().getName(), Collectors.counting()));
 
         return new AnalyticsDto(totalTasks, totalUsers, totalTeams, overdueTasks, completionRate, tasksByStatus, tasksByTeam);
     }
@@ -128,7 +124,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponseDto> getAllTasksForAdmin() {
-        return taskMapper.toTaskResponseDtoList(taskRepository.findAll());
+    	return taskMapper.toTaskResponseDtoList(taskRepository.findAllWithDetails());
     }
 
     @Transactional
@@ -186,7 +182,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponseDto> getTasksByTeamId(Long teamId) {
-        return taskMapper.toTaskResponseDtoList(taskRepository.findByTeamId(teamId));
+    	  return taskMapper.toTaskResponseDtoList(taskRepository.findByTeamIdWithDetails(teamId));
     }
 
     @Transactional
